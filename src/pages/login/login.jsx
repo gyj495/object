@@ -10,24 +10,52 @@ import  logo from './images/logo.png'
 
 const Item=Form.Item
 
-//登录
 
+//登录
 class Login extends Component {
 
-
-
   handleSubmit=(event)=>{
-    const form=this.props.form
-    const values=form.getFieldsValue()
-    console.log('handleSubmit()',values)
+    //得到form对象
+    // const form=this.props.form
+    //获取表单项的输入数据
+    // const values=form.getFieldsValue()
+    // console.log('handleSubmit()',values)
+
+
+    //阻止事件的默认行为
     event.preventDefault()
+    //对所有表单字段进行校验
+    this.props.form.validateFields((err, values) => {
+      if (!err) {
+        console.log('提交登录的ajax请求 ', values);
+      }else{
+        console.log('检验失败')
+      }
+    });
+  }
+
+  //自定义密码验证
+  validatePwd=(rule,value,callback)=>{
+    console.log('validatePwd()',rule,value)
+    if(!value){
+      callback('密码必须输入')
+    }else if(value.length<4){
+      callback('密码长度不得小于四位')
+    }else if(value.length>12){
+      callback('密码长度不得大于12位')
+    }else if(!/^[a-zA-Z0-9_]+$/.test(value)){
+      callback('密码规定为字母数字，下划线')
+    }else{
+      callback()  //没有问题  验证通过
+    }
+    // callback('xxx')  // 验证失败，并制定提示的文本
   }
 
   render(){
 
     //得到具有强大功能的form对象
     const form =this.props.form
-    const {getFieldDecorator}=form
+      const {getFieldDecorator}=form
 
     return (
       <div className='login'>
@@ -44,9 +72,11 @@ class Login extends Component {
           <Item>
             {
               getFieldDecorator('username',{
-                rules: [{ required: true, message: '请输入用户名!' }
-                ,{min:4,message:'不得小于四位'},
-                  {max:12 ,message:'不得大于12位'}
+                rules: [
+                  {required: true,whitespace:true, message: '请输入用户名!' },
+                  {min:4,message:'不得小于四位'},
+                  {max:12 ,message:'不得大于12位'},
+                  {pattern:/^[a-zA-Z0-9_]+$/,message:'用户名需要是字母数字、下划线'},
               ],
               })(
                 <Input
@@ -58,7 +88,11 @@ class Login extends Component {
           </Item>
           <Item>
             {
-              getFieldDecorator('password',{})(
+              getFieldDecorator('password',{
+                rules:[{
+                  validator:this.validatePwd
+                }]
+              })(
                 <Input
                   prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
                   type="password"
@@ -80,9 +114,7 @@ class Login extends Component {
 const WrapLogin=Form.create()(Login)
 export  default WrapLogin
 
-//valiadataPwd=(rule,value,callback)=>{
-// callback()  没有问题  验证通过
-// callback('xxx')   验证失败，并制定提示的文本
+
 
 //前台表单验证
 
